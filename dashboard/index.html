@@ -492,21 +492,24 @@
 
     function renderGmail(el, gmail) {
       clearEl(el);
-      if (!gmail || gmail.unread_count === undefined) {
-        showMsg(el, 'No data', 'empty-state');
-        return;
+      if (!gmail) { showMsg(el, 'No data', 'empty-state'); return; }
+      if (gmail.messages && gmail.messages.length > 0) {
+        gmail.messages.forEach(function(msg) {
+          var row = document.createElement('div');
+          row.className = 'task-row';
+          var content = document.createElement('span');
+          content.className = 'task-content';
+          content.textContent = msg.subject;
+          var meta = document.createElement('span');
+          meta.className = 'task-meta';
+          meta.textContent = msg.from;
+          row.appendChild(content);
+          row.appendChild(meta);
+          el.appendChild(row);
+        });
+      } else {
+        showMsg(el, gmail.unread_count > 0 ? gmail.unread_count + ' unread (loading details...)' : 'Inbox zero!', 'empty-state');
       }
-      var row = document.createElement('div');
-      row.className = 'stat-row';
-      var label = document.createElement('span');
-      label.className = 'stat-label';
-      label.textContent = 'Unread messages';
-      var val = document.createElement('span');
-      val.className = 'stat-value' + (gmail.unread_count > 50 ? ' warn' : '');
-      val.textContent = gmail.unread_count;
-      row.appendChild(label);
-      row.appendChild(val);
-      el.appendChild(row);
     }
 
     function renderCalendar(el, calendar) {
