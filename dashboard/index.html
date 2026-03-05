@@ -142,6 +142,19 @@
       color: var(--muted);
       text-decoration: line-through;
     }
+    .session-task .task-content {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .session-badge {
+      font-size: 0.65rem;
+      color: var(--bg);
+      background: var(--accent);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      margin-left: 0.5rem;
+      font-weight: 600;
+    }
     .stat-row {
       display: flex;
       justify-content: space-between;
@@ -312,11 +325,18 @@
     }
 
     function createTaskRow(task, completed) {
+      var isSession = completed && task.source === 'session';
       var row = document.createElement('div');
-      row.className = 'task-row ' + (completed ? 'completed-task' : priorityClass(task.priority));
+      row.className = 'task-row ' + (isSession ? 'session-task' : (completed ? 'completed-task' : priorityClass(task.priority)));
       var content = document.createElement('span');
       content.className = 'task-content';
       content.textContent = task.content;
+      if (isSession) {
+        var badge = document.createElement('span');
+        badge.className = 'session-badge';
+        badge.textContent = 'SHIPPED';
+        content.appendChild(badge);
+      }
       var meta = document.createElement('span');
       meta.className = 'task-meta';
       meta.textContent = completed ? '' : (task.due || '');
