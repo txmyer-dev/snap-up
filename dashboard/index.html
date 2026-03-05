@@ -183,6 +183,31 @@
       padding: 1.5rem;
       font-style: italic;
     }
+    .gh-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .gh-row:last-child { border-bottom: none; }
+    .gh-summary { color: var(--text); max-width: 75%; }
+    .gh-time { font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+    .gh-type {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      margin-right: 0.4rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .gh-type-push { background: rgba(59,130,246,0.15); color: var(--accent); }
+    .gh-type-create { background: rgba(34,197,94,0.15); color: var(--green); }
+    .gh-type-public { background: rgba(234,179,8,0.15); color: var(--yellow); }
+    .gh-type-pr { background: rgba(168,85,247,0.15); color: #a855f7; }
+    .gh-type-default { background: rgba(139,143,163,0.15); color: var(--muted); }
   </style>
 </head>
 <body>
@@ -214,6 +239,11 @@
     <div class="card">
       <h2>VPS Health</h2>
       <div id="vpsHealth"><div class="loading-msg">Loading...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>GitHub Activity <span class="count" id="ghCount">0</span></h2>
+      <div id="githubActivity"><div class="loading-msg">Loading...</div></div>
     </div>
 
     <div class="card handoff-card" id="handoffCard" style="display:none;">
@@ -317,6 +347,48 @@
       return sec;
     }
 
+    function ghTypeClass(type) {
+      var t = (type || '').toLowerCase();
+      if (t === 'push') return 'gh-type-push';
+      if (t === 'create') return 'gh-type-create';
+      if (t === 'public') return 'gh-type-public';
+      if (t === 'pullrequest') return 'gh-type-pr';
+      return 'gh-type-default';
+    }
+
+    function timeAgo(dateStr) {
+      if (!dateStr) return '';
+      var diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    function renderGitHub(el, events) {
+      clearEl(el);
+      if (!events || events.length === 0) {
+        showMsg(el, 'No recent activity', 'empty-state');
+        return;
+      }
+      events.forEach(function(ev) {
+        var row = document.createElement('div');
+        row.className = 'gh-row';
+        var left = document.createElement('span');
+        left.className = 'gh-summary';
+        var badge = document.createElement('span');
+        badge.className = 'gh-type ' + ghTypeClass(ev.type);
+        badge.textContent = ev.type;
+        left.appendChild(badge);
+        left.appendChild(document.createTextNode(ev.summary));
+        var right = document.createElement('span');
+        right.className = 'gh-time';
+        right.textContent = timeAgo(ev.created_at);
+        row.appendChild(left);
+        row.appendChild(right);
+        el.appendChild(row);
+      });
+    }
+
     function renderHandoff(data) {
       var card = document.getElementById('handoffCard');
       var el = document.getElementById('handoffContent');
@@ -371,6 +443,8 @@
       renderTasks(document.getElementById('dueTasks'), data.todoist ? data.todoist.due_today : [], false);
       renderTasks(document.getElementById('completedTasks'), data.todoist ? data.todoist.completed_today : [], true);
       renderVPS(document.getElementById('vpsHealth'), data.vps);
+      document.getElementById('ghCount').textContent = data.github ? data.github.length : 0;
+      renderGitHub(document.getElementById('githubActivity'), data.github);
       renderHandoff(data);
 
       var sysEl = document.getElementById('systemInfo');
