@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAI Status</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --text: #e4e7ef;
+      --muted: #8b8fa3;
+      --accent: #3b82f6;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .last-updated {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .refresh-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .refresh-btn:hover { border-color: var(--accent); }
+    .refresh-btn.loading { opacity: 0.5; pointer-events: none; }
+    .status-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .status-label {
+      font-size: 0.875rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    .status-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .status-value.ok { color: var(--green); }
+    .status-value.warn { color: var(--yellow); }
+    .status-value.error { color: var(--red); }
+    .status-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 768px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .card h2 {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card h2 .count {
+      background: var(--border);
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      color: var(--text);
+    }
+    .task-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .task-row:last-child { border-bottom: none; }
+    .task-content {
+      color: var(--text);
+      max-width: 70%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .task-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .priority-1 { border-left: 3px solid var(--red); padding-left: 0.5rem; }
+    .priority-2 { border-left: 3px solid var(--yellow); padding-left: 0.5rem; }
+    .priority-3 { border-left: 3px solid var(--accent); padding-left: 0.5rem; }
+    .completed-task .task-content {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: var(--muted); }
+    .stat-value { font-weight: 500; font-variant-numeric: tabular-nums; }
+    .stat-value.healthy { color: var(--green); }
+    .stat-value.warning { color: var(--yellow); }
+    .fullwidth { grid-column: 1 / -1; }
+    .loading-msg { color: var(--muted); text-align: center; padding: 2rem; }
+    .error-msg { color: var(--red); text-align: center; padding: 1rem; font-size: 0.85rem; }
+    .handoff-card { border-left: 3px solid var(--accent); }
+    .handoff-section { margin-bottom: 0.75rem; }
+    .handoff-section-title {
+      font-size: 0.75rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.3rem;
+    }
+    .handoff-item {
+      font-size: 0.85rem;
+      color: var(--text);
+      line-height: 1.4;
+      padding: 0.15rem 0;
+    }
+    .handoff-item::before {
+      content: "\2192 ";
+      color: var(--muted);
+    }
+    .empty-state {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 1.5rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>PAI Status</h1>
+    <div class="header-right">
+      <span class="last-updated" id="lastUpdated">Loading...</span>
+      <button class="refresh-btn" id="refreshBtn" onclick="refresh()">Refresh</button>
+    </div>
+  </div>
+
+  <div class="status-banner">
+    <div class="status-label">System Status</div>
+    <div class="status-value ok" id="systemStatus">Loading...</div>
+    <div class="status-sub" id="statusSub"></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Due Today <span class="count" id="dueCount">0</span></h2>
+      <div id="dueTasks"><div class="loading-msg">Loading...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Completed Today <span class="count" id="completedCount">0</span></h2>
+      <div id="completedTasks"><div class="loading-msg">Loading...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>VPS Health</h2>
+      <div id="vpsHealth"><div class="loading-msg">Loading...</div></div>
+    </div>
+
+    <div class="card handoff-card" id="handoffCard" style="display:none;">
+      <h2>Last Session Handoff</h2>
+      <div id="handoffContent"></div>
+    </div>
+
+    <div class="card fullwidth">
+      <h2>System Info</h2>
+      <div id="systemInfo"><div class="loading-msg">Loading...</div></div>
+    </div>
+  </div>
+
+  <script>
+    var N8N_WEBHOOK = 'https://n8n.felaniam.cloud/webhook/catch-me-up';
+    var lastData = null;
+
+    function clearEl(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+    function showMsg(el, text, cls) {
+      clearEl(el);
+      var d = document.createElement('div');
+      d.className = cls || 'loading-msg';
+      d.textContent = text;
+      el.appendChild(d);
+    }
+
+    function priorityClass(p) {
+      if (p === 4) return 'priority-1';
+      if (p === 3) return 'priority-2';
+      if (p === 2) return 'priority-3';
+      return '';
+    }
+
+    function createTaskRow(task, completed) {
+      var row = document.createElement('div');
+      row.className = 'task-row ' + (completed ? 'completed-task' : priorityClass(task.priority));
+      var content = document.createElement('span');
+      content.className = 'task-content';
+      content.textContent = task.content;
+      var meta = document.createElement('span');
+      meta.className = 'task-meta';
+      meta.textContent = completed ? '' : (task.due || '');
+      row.appendChild(content);
+      row.appendChild(meta);
+      return row;
+    }
+
+    function renderTasks(el, tasks, completed) {
+      clearEl(el);
+      if (!tasks || tasks.length === 0) {
+        showMsg(el, completed ? 'Nothing completed yet' : 'All clear!', 'empty-state');
+        return;
+      }
+      tasks.forEach(function(t) { el.appendChild(createTaskRow(t, completed)); });
+    }
+
+    function createStatRow(label, value, cls) {
+      var row = document.createElement('div');
+      row.className = 'stat-row';
+      var labelEl = document.createElement('span');
+      labelEl.className = 'stat-label';
+      labelEl.textContent = label;
+      var valEl = document.createElement('span');
+      valEl.className = 'stat-value ' + (cls || 'healthy');
+      valEl.textContent = value;
+      row.appendChild(labelEl);
+      row.appendChild(valEl);
+      return row;
+    }
+
+    function renderVPS(el, vps) {
+      clearEl(el);
+      if (!vps || vps.error) {
+        showMsg(el, vps ? vps.error : 'No VPS data', 'error-msg');
+        return;
+      }
+      var diskPct = parseInt((vps.disk_usage || '0').replace('%', '')) || 0;
+      el.appendChild(createStatRow('Disk Usage', vps.disk_usage || 'N/A', diskPct > 80 ? 'warning' : 'healthy'));
+      el.appendChild(createStatRow('Memory', vps.memory || 'N/A', 'healthy'));
+      el.appendChild(createStatRow('Containers', (vps.containers != null ? vps.containers + ' running' : 'N/A'), 'healthy'));
+      el.appendChild(createStatRow('Uptime', vps.uptime || 'N/A', 'healthy'));
+    }
+
+    function createHandoffSection(title, items) {
+      var sec = document.createElement('div');
+      sec.className = 'handoff-section';
+      var h = document.createElement('div');
+      h.className = 'handoff-section-title';
+      h.textContent = title;
+      sec.appendChild(h);
+      items.forEach(function(item) {
+        var p = document.createElement('div');
+        p.className = 'handoff-item';
+        p.textContent = item;
+        sec.appendChild(p);
+      });
+      return sec;
+    }
+
+    function renderHandoff(data) {
+      var card = document.getElementById('handoffCard');
+      var el = document.getElementById('handoffContent');
+      if (!data || !data.session || !data.session.handoff) {
+        card.style.display = 'none';
+        return;
+      }
+      card.style.display = '';
+      clearEl(el);
+      var h = data.session.handoff;
+      if (h.in_progress && h.in_progress.length) {
+        el.appendChild(createHandoffSection('In Progress', h.in_progress));
+      }
+      if (h.next_steps && h.next_steps.length) {
+        el.appendChild(createHandoffSection('Next Steps', h.next_steps));
+      }
+      if (h.decisions && h.decisions.length) {
+        el.appendChild(createHandoffSection('Decisions Made', h.decisions));
+      }
+    }
+
+    function updateStatus(data) {
+      var el = document.getElementById('systemStatus');
+      var sub = document.getElementById('statusSub');
+      if (!data) {
+        el.textContent = 'Offline';
+        el.className = 'status-value error';
+        sub.textContent = 'Could not reach n8n';
+        return;
+      }
+      var diskPct = parseInt((data.vps && data.vps.disk_usage || '0').replace('%', '')) || 0;
+      if (diskPct > 90) {
+        el.textContent = 'Needs Attention';
+        el.className = 'status-value warn';
+      } else {
+        el.textContent = 'All Systems Go';
+        el.className = 'status-value ok';
+      }
+      var parts = [];
+      parts.push((data.todoist ? data.todoist.due_count : 0) + ' due');
+      parts.push((data.todoist ? data.todoist.completed_count : 0) + ' done');
+      if (data.vps && data.vps.containers != null) parts.push(data.vps.containers + ' containers');
+      sub.textContent = parts.join(' \u00b7 ');
+    }
+
+    function renderAll(data) {
+      if (!data) { updateStatus(null); return; }
+      updateStatus(data);
+      document.getElementById('dueCount').textContent = data.todoist ? data.todoist.due_count : 0;
+      document.getElementById('completedCount').textContent = data.todoist ? data.todoist.completed_count : 0;
+      renderTasks(document.getElementById('dueTasks'), data.todoist ? data.todoist.due_today : [], false);
+      renderTasks(document.getElementById('completedTasks'), data.todoist ? data.todoist.completed_today : [], true);
+      renderVPS(document.getElementById('vpsHealth'), data.vps);
+      renderHandoff(data);
+
+      var sysEl = document.getElementById('systemInfo');
+      clearEl(sysEl);
+      sysEl.appendChild(createStatRow('Last generated', data.generated_at_human || data.generated_at || 'Unknown', ''));
+      if (data.session && data.session.last_session_end) {
+        sysEl.appendChild(createStatRow('Last session ended', new Date(data.session.last_session_end).toLocaleString(), ''));
+      }
+      document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    }
+
+    async function loadData() {
+      try {
+        var res = await fetch(N8N_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}'
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        lastData = await res.json();
+        return lastData;
+      } catch(e) {
+        console.error('Failed to fetch status:', e);
+        return null;
+      }
+    }
+
+    async function refresh() {
+      var btn = document.getElementById('refreshBtn');
+      btn.classList.add('loading');
+      btn.textContent = 'Refreshing...';
+      var data = await loadData();
+      renderAll(data);
+      btn.classList.remove('loading');
+      btn.textContent = 'Refresh';
+    }
+
+    async function init() {
+      var data = await loadData();
+      renderAll(data);
+    }
+
+    init();
+    setInterval(function() { loadData().then(renderAll); }, 300000);
+  </script>
+</body>
+</html>
