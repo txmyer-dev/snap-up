@@ -292,6 +292,16 @@
       <div id="n8nExecs"><div class="loading-msg">Loading...</div></div>
     </div>
 
+    <div class="card">
+      <h2>Gmail <span class="count" id="gmailCount">0</span></h2>
+      <div id="gmailContent"><div class="loading-msg">Loading...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Calendar Today <span class="count" id="calCount">0</span></h2>
+      <div id="calendarContent"><div class="loading-msg">Loading...</div></div>
+    </div>
+
     <div class="card handoff-card" id="handoffCard" style="display:none;">
       <h2>Last Session Handoff</h2>
       <div id="handoffContent"></div>
@@ -480,6 +490,58 @@
       });
     }
 
+    function renderGmail(el, gmail) {
+      clearEl(el);
+      if (!gmail || gmail.unread_count === undefined) {
+        showMsg(el, 'No data', 'empty-state');
+        return;
+      }
+      var row = document.createElement('div');
+      row.className = 'stat-row';
+      var label = document.createElement('span');
+      label.className = 'stat-label';
+      label.textContent = 'Unread messages';
+      var val = document.createElement('span');
+      val.className = 'stat-value' + (gmail.unread_count > 50 ? ' warn' : '');
+      val.textContent = gmail.unread_count;
+      row.appendChild(label);
+      row.appendChild(val);
+      el.appendChild(row);
+    }
+
+    function renderCalendar(el, calendar) {
+      clearEl(el);
+      if (!calendar || !calendar.events) {
+        showMsg(el, 'No data', 'empty-state');
+        return;
+      }
+      if (calendar.events.length === 0) {
+        showMsg(el, 'No events today', 'empty-state');
+        return;
+      }
+      calendar.events.forEach(function(ev) {
+        var row = document.createElement('div');
+        row.className = 'task-row';
+        var content = document.createElement('span');
+        content.className = 'task-content';
+        content.textContent = ev.summary;
+        var meta = document.createElement('span');
+        meta.className = 'task-meta';
+        if (ev.start && ev.start.indexOf('T') !== -1) {
+          var t = ev.start.split('T')[1].substring(0, 5);
+          var h = parseInt(t.split(':')[0]);
+          var ampm = h >= 12 ? 'PM' : 'AM';
+          h = h % 12 || 12;
+          meta.textContent = h + ':' + t.split(':')[1] + ' ' + ampm;
+        } else {
+          meta.textContent = 'All day';
+        }
+        row.appendChild(content);
+        row.appendChild(meta);
+        el.appendChild(row);
+      });
+    }
+
     function renderHandoff(data) {
       var card = document.getElementById('handoffCard');
       var el = document.getElementById('handoffContent');
@@ -538,6 +600,10 @@
       renderGitHub(document.getElementById('githubActivity'), data.github);
       document.getElementById('n8nCount').textContent = data.n8n ? data.n8n.total : 0;
       renderN8n(document.getElementById('n8nExecs'), data.n8n);
+      document.getElementById('gmailCount').textContent = data.gmail ? data.gmail.unread_count : 0;
+      renderGmail(document.getElementById('gmailContent'), data.gmail);
+      document.getElementById('calCount').textContent = data.calendar ? data.calendar.event_count : 0;
+      renderCalendar(document.getElementById('calendarContent'), data.calendar);
       renderHandoff(data);
 
       var sysEl = document.getElementById('systemInfo');
