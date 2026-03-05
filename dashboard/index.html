@@ -208,6 +208,34 @@
     .gh-type-public { background: rgba(234,179,8,0.15); color: var(--yellow); }
     .gh-type-pr { background: rgba(168,85,247,0.15); color: #a855f7; }
     .gh-type-default { background: rgba(139,143,163,0.15); color: var(--muted); }
+    .n8n-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .n8n-row:last-child { border-bottom: none; }
+    .n8n-wf { color: var(--text); }
+    .n8n-status {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .n8n-success { background: rgba(34,197,94,0.15); color: var(--green); }
+    .n8n-error { background: rgba(239,68,68,0.15); color: var(--red); }
+    .n8n-summary {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+    }
+    .n8n-summary-item { display: flex; align-items: center; gap: 0.3rem; }
+    .n8n-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .n8n-dot-ok { background: var(--green); }
+    .n8n-dot-err { background: var(--red); }
   </style>
 </head>
 <body>
@@ -244,6 +272,11 @@
     <div class="card">
       <h2>GitHub Activity <span class="count" id="ghCount">0</span></h2>
       <div id="githubActivity"><div class="loading-msg">Loading...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>n8n Workflows <span class="count" id="n8nCount">0</span></h2>
+      <div id="n8nExecs"><div class="loading-msg">Loading...</div></div>
     </div>
 
     <div class="card handoff-card" id="handoffCard" style="display:none;">
@@ -389,6 +422,44 @@
       });
     }
 
+    function renderN8n(el, n8n) {
+      clearEl(el);
+      if (!n8n || (!n8n.recent || n8n.recent.length === 0)) {
+        showMsg(el, 'No recent executions', 'empty-state');
+        return;
+      }
+      var summary = document.createElement('div');
+      summary.className = 'n8n-summary';
+      var okItem = document.createElement('span');
+      okItem.className = 'n8n-summary-item';
+      var okDot = document.createElement('span');
+      okDot.className = 'n8n-dot n8n-dot-ok';
+      okItem.appendChild(okDot);
+      okItem.appendChild(document.createTextNode(' ' + n8n.success_count + ' passed'));
+      var errItem = document.createElement('span');
+      errItem.className = 'n8n-summary-item';
+      var errDot = document.createElement('span');
+      errDot.className = 'n8n-dot n8n-dot-err';
+      errItem.appendChild(errDot);
+      errItem.appendChild(document.createTextNode(' ' + n8n.error_count + ' failed'));
+      summary.appendChild(okItem);
+      summary.appendChild(errItem);
+      el.appendChild(summary);
+      n8n.recent.forEach(function(ex) {
+        var row = document.createElement('div');
+        row.className = 'n8n-row';
+        var wf = document.createElement('span');
+        wf.className = 'n8n-wf';
+        wf.textContent = ex.workflow;
+        var badge = document.createElement('span');
+        badge.className = 'n8n-status ' + (ex.status === 'success' ? 'n8n-success' : 'n8n-error');
+        badge.textContent = ex.status;
+        row.appendChild(wf);
+        row.appendChild(badge);
+        el.appendChild(row);
+      });
+    }
+
     function renderHandoff(data) {
       var card = document.getElementById('handoffCard');
       var el = document.getElementById('handoffContent');
@@ -445,6 +516,8 @@
       renderVPS(document.getElementById('vpsHealth'), data.vps);
       document.getElementById('ghCount').textContent = data.github ? data.github.length : 0;
       renderGitHub(document.getElementById('githubActivity'), data.github);
+      document.getElementById('n8nCount').textContent = data.n8n ? data.n8n.total : 0;
+      renderN8n(document.getElementById('n8nExecs'), data.n8n);
       renderHandoff(data);
 
       var sysEl = document.getElementById('systemInfo');
