@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowRight, AlertTriangle, FileText, ChevronDown } from 'lucide-react';
-import gsap from 'gsap';
 
 const STATUS_CONFIG = {
   active: { label: 'Active', accent: 'border-blue-400', dot: 'bg-blue-400', text: 'text-blue-400' },
@@ -36,25 +35,10 @@ function Section({ label, items, icon: Icon, iconClass }) {
 }
 
 function ProjectCard({ project, isExpanded, onToggle }) {
-  const detailRef = useRef(null);
   const config = STATUS_CONFIG[project.status] || STATUS_CONFIG.active;
   const handoff = project.handoff || {};
   const firstItem = (handoff.in_progress || handoff.inProgress || [])[0];
   const blockerCount = (handoff.blockers || []).length;
-
-  useEffect(() => {
-    if (!detailRef.current) return;
-    if (isExpanded) {
-      gsap.fromTo(detailRef.current,
-        { height: 0, opacity: 0 },
-        { height: 'auto', opacity: 1, duration: 0.3, ease: 'power2.out' }
-      );
-    } else {
-      gsap.to(detailRef.current,
-        { height: 0, opacity: 0, duration: 0.2, ease: 'power2.in' }
-      );
-    }
-  }, [isExpanded]);
 
   return (
     <div className={`bg-moss rounded-xl border border-white/10 border-l-4 ${config.accent} cursor-pointer transition-colors hover:bg-white/5`}>
@@ -85,7 +69,7 @@ function ProjectCard({ project, isExpanded, onToggle }) {
         )}
       </div>
 
-      <div ref={detailRef} className="overflow-hidden" style={{ height: 0, opacity: 0 }}>
+      {isExpanded && (
         <div className="px-4 pb-4 pt-1 border-t border-white/5">
           <Section label="In Progress" items={handoff.in_progress || handoff.inProgress} icon={ArrowRight} />
           <Section label="Next Steps" items={handoff.next_steps || handoff.nextSteps} icon={ArrowRight} />
@@ -96,7 +80,7 @@ function ProjectCard({ project, isExpanded, onToggle }) {
             <Section label="Completed" items={project.completed} icon={ArrowRight} iconClass="text-green-400" />
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
