@@ -1,0 +1,21 @@
+{
+  "unread_count": 4,
+  "messages": [
+    {
+      "subject": "Coolify: Deployment successful — paperclip",
+      "sender": "coolify@felaniam.cloud"
+    },
+    {
+      "subject": "Plaid sync complete — 3 accounts updated",
+      "sender": "notifications@plaid.com"
+    },
+    {
+      "subject": "Linear: HAC-15 moved to Done",
+      "sender": "notifications@linear.app"
+    },
+    {
+      "subject": "GitHub: PR #4 merged in hackathon-demo",
+      "sender": "noreply@github.com"
+    }
+  ]
+}

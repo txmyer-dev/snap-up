@@ -1,0 +1,28 @@
+{
+  "accounts": [
+    {
+      "name": "Chase Checking",
+      "institution": "Chase",
+      "balance": 2847.32,
+      "type": "checking"
+    },
+    {
+      "name": "Chase Savings",
+      "institution": "Chase",
+      "balance": 5120.00,
+      "type": "savings"
+    },
+    {
+      "name": "Capital One Credit",
+      "institution": "Capital One",
+      "balance": -892.45,
+      "type": "credit"
+    }
+  ],
+  "total_assets": 7967.32,
+  "total_liabilities": 892.45,
+  "net_worth": 7074.87,
+  "last_sync": "2026-03-24T18:00:00Z",
+  "sync_status": "healthy",
+  "linked_count": 3
+}

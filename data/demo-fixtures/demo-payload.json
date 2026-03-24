@@ -1,0 +1,68 @@
+{
+  "session": {
+    "projects": [
+      {
+        "name": "SNAP-Up Dashboard",
+        "status": "in_progress",
+        "tasks": [
+          { "title": "Finance card", "status": "done" },
+          { "title": "Paperclip card", "status": "done" },
+          { "title": "Demo mode", "status": "in_progress" },
+          { "title": "Video recording", "status": "todo" }
+        ]
+      },
+      {
+        "name": "Paperclip KVM2",
+        "status": "done",
+        "tasks": [
+          { "title": "Deploy via Coolify", "status": "done" },
+          { "title": "Linear sync plugin", "status": "done" },
+          { "title": "Agent dispatch verified", "status": "done" }
+        ]
+      },
+      {
+        "name": "Crowbar Finance",
+        "status": "done",
+        "tasks": [
+          { "title": "Plaid integration", "status": "done" },
+          { "title": "hledger sync", "status": "done" },
+          { "title": "Dashboard UI", "status": "done" }
+        ]
+      }
+    ]
+  },
+  "todoist": {
+    "due_count": 4,
+    "due_today": [
+      { "content": "Record hackathon demo video", "priority": 4 },
+      { "content": "Set up Paperclip monitoring on KVM2", "priority": 3 },
+      { "content": "Write 300-word hackathon summary", "priority": 3 },
+      { "content": "Review agent PR #4 in hackathon-demo", "priority": 2 }
+    ],
+    "completed_count": 5,
+    "completed_today": [
+      { "content": "Deploy Paperclip on Hostinger KVM2", "source": "session" },
+      { "content": "Connect Linear sync to new instance", "source": "session" },
+      { "content": "Verify agent dispatch loop E2E", "source": "session" },
+      { "content": "Create demo fixture data", "source": "session" },
+      { "content": "Build Finance card on dashboard" }
+    ]
+  },
+  "gmail": {
+    "unread_count": 4,
+    "messages": [
+      { "subject": "Coolify: Deployment successful — paperclip", "sender": "coolify@felaniam.cloud" },
+      { "subject": "Plaid sync complete — 3 accounts updated", "sender": "notifications@plaid.com" },
+      { "subject": "Linear: HAC-15 moved to Done", "sender": "notifications@linear.app" },
+      { "subject": "GitHub: PR #4 merged in hackathon-demo", "sender": "noreply@github.com" }
+    ]
+  },
+  "calendar": {
+    "event_count": 3,
+    "events": [
+      { "summary": "Sprint Planning — SNAP-Up", "start": "2026-03-24T10:00:00-05:00" },
+      { "summary": "Agent Review — Paperclip KVM2", "start": "2026-03-24T14:00:00-05:00" },
+      { "summary": "Hackathon Video Recording", "start": "2026-03-24T19:00:00-05:00" }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "due_count": 4,
+  "due_today": [
+    { "content": "Record hackathon demo video", "priority": 4 },
+    { "content": "Set up Paperclip monitoring on KVM2", "priority": 3 },
+    { "content": "Write 300-word hackathon summary", "priority": 3 },
+    { "content": "Review agent PR #4 in hackathon-demo", "priority": 2 }
+  ],
+  "completed_count": 5,
+  "completed_today": [
+    { "content": "Deploy Paperclip on Hostinger KVM2", "source": "session" },
+    { "content": "Connect Linear sync to new instance", "source": "session" },
+    { "content": "Verify agent dispatch loop E2E", "source": "session" },
+    { "content": "Create demo fixture data", "source": "session" },
+    { "content": "Build Finance card on dashboard" }
+  ]
+}
