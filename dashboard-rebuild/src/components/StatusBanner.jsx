@@ -77,6 +77,11 @@ export default function StatusBanner({ data }) {
           {status.label}
         </h1>
       </div>
+      {status.reasons.length > 0 && (
+        <p className="text-sm text-cream/40 mb-2">
+          {status.reasons.map(r => r.msg).join(' · ')}
+        </p>
+      )}
       <p className="text-cream/50 text-sm md:text-base">
         {data ? (
           <>
