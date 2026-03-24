@@ -6,6 +6,8 @@ import WorkflowCard from './WorkflowCard';
 import GitHubCard from './GitHubCard';
 import GmailCard from './GmailCard';
 import CalendarCard from './CalendarCard';
+import FinanceCard from './FinanceCard';
+import PaperclipCard from './PaperclipCard';
 import ProjectKanbanCard from './ProjectKanbanCard';
 import SystemInfo from './SystemInfo';
 
@@ -82,6 +84,14 @@ export default function DashboardGrid({ data, loading }) {
 
         <div data-card className="opacity-0">
           <CalendarCard calendar={data?.calendar} />
+        </div>
+
+        <div data-card className="opacity-0">
+          <FinanceCard finance={data?.finance} />
+        </div>
+
+        <div data-card className="opacity-0">
+          <PaperclipCard paperclip={data?.paperclip} />
         </div>
       </div>
 
